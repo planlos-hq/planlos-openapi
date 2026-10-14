@@ -1,0 +1,51 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCS_REPO_NAME = "planlos-hq/planlos-docs"
+        DOCS_REPO_TARGET_BRANCH = "main"
+        DOCS_SPEC_PATH = "docs/entwicklung/API/openapi.yaml"
+    }
+
+    stages {
+        stage('Clone Docs Repo') {
+            steps {
+                withCredentials([string(
+                    credentialsId: 'github-token',
+                    variable: 'GIT_TOKEN'
+                )]) {
+                    sh '''
+                        rm -rf ./planlos-docs
+                        git clone --depth 1 https://${GIT_TOKEN}@github.com/${DOCS_REPO_NAME}.git planlos-docs
+                    '''
+                }
+            }
+        }
+
+        stage('Copy API Spec to Docs') {
+            steps {
+                sh 'cp openapi.yaml "planlos-docs/${DOCS_SPEC_PATH}"'
+            }
+        }
+
+        stage('Push to Docs Repo') {
+            steps {
+                withCredentials([string(
+                    credentialsId: 'github-token',
+                    variable: 'GIT_TOKEN'
+                )]) {
+                    dir('planlos-docs') {
+                        sh '''
+                            git config user.email "jenkins@planlos.local"
+                            git config user.name "Jenkins CI"
+                            git add "${DOCS_SPEC_PATH}"
+                            SOURCE_COMMIT=$(git -C .. rev-parse HEAD)
+                            git commit -m "Jenkins: Updated API documentation. Source commit: planlos-hq/planlos-openapi@${SOURCE_COMMIT}" || true
+                            git push https://${GIT_TOKEN}@github.com/${DOCS_REPO_NAME}.git ${DOCS_REPO_TARGET_BRANCH}
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}

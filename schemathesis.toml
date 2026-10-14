@@ -1,0 +1,6 @@
+workers = "auto"
+rate-limit = "100/s"
+request-timeout = 1
+phases.examples.enabled = false
+[generation]
+database = ":memory:"

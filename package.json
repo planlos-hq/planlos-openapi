@@ -1,0 +1,13 @@
+{
+  "name": "planlos-openapi",
+  "version": "1.2.0",
+  "private": true,
+  "scripts": {
+    "build-html": "openapi-generator-cli generate -i openapi.yaml -g html -o dist",
+    "build-html-interactive": "openapi-generator-cli generate -i openapi.yaml -g html2 -o html",
+    "validate": "openapi-generator-cli validate -i openapi.yaml"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.25.2"
+  }
+}
